@@ -1,9 +1,32 @@
-# Containerized-Application-Deployment-on-ECS-with-CI-CD-Pipeline
-This guide outlines the step-by-step process to deploy a Spring Boot web application to AWS ECS Fargate using GitHub, AWS networking, security configurations, and CI/CD pipelines.
+# **Containerized Application Deployment on ECS with CI/CD Pipeline**  
+This project provides a comprehensive walkthrough for deploying a **containerized Spring Boot web application** to **AWS ECS Fargate**, leveraging key AWS services such as **GitHub**, **AWS CodePipeline**, **Amazon ECR**, **AWS CodeBuild**, and **AWS CodeDeploy**. The project ensures a secure, scalable, and automated deployment workflow with **CI/CD integration**, enabling seamless application updates and deployment management.
 
 ---
 
-## Phase 1: Deploy Spring Boot Web App to AWS ECS Fargate
+## **Table of Contents**  
+1. [Architecture Diagram](#architecture-diagram)  
+2. [Deploy Spring Boot Web App to AWS ECS Fargate](#deploy-spring-boot-web-app-to-aws-ecs-fargate)
+   - [Part 1: Download Application Code](#part-1-Download-Application-Code)  
+   - [Part 2: Networking and Security Configuration](#part-2-Networking-and-Security-Configuration)  
+   - [Part 3: Amazon ECR Repository](#part-3-Amazon-ECR-Repository)  
+   - [Part 4:  Amazon ECS Setup](#part-4-Amazon-ECS-Setup)
+3 [Testing ECS Deployment](Testing-ECS-Deployment)
+4. [CI/CD Pipeline Setup](#ci-cd-pipeline-setup)  
+   - [Part 1: AWS CodeBuild](#part-1-aws-codebuild)  
+   - [Part 2: AWS CodePipeline](#part-2-aws-codepipeline)  
+6. [Testing the Deployment](#testing-the-deployment)  
+7. [Troubleshooting Guide](#troubleshooting-guide)  
+8. [Conclusion](#conclusion)  
+
+---
+## Architecture Diagram
+
+<img src="https://github.com/gitkailash/Containerized-Application-Deployment-on-ECS-with-CI-CD-Pipeline/blob/master/assets/architecture-diagram.png" alt="Architecture Diagram"/>
+
+
+---
+
+## Deploy Spring Boot Web App to AWS ECS Fargate
 
 ### Part 1: Download Application Code
 
@@ -11,7 +34,6 @@ This guide outlines the step-by-step process to deploy a Spring Boot web applica
    ```bash
    git clone https://github.com/gitkailash/Containerized-Application-Deployment-on-ECS-with-CI-CD-Pipeline.git
    ```
-
 ---
 
 ### Part 2: Networking and Security Configuration
@@ -106,54 +128,94 @@ This guide outlines the step-by-step process to deploy a Spring Boot web applica
    ECS-ALB-123456789.us-east-1.elb.amazonaws.com:8080
    ```
 3. Validate the application is running successfully.
-*Screenshots*
+   
+*Validate Deployment*
+![Login](/assets/login.png) 
 
 ---
 
-## Phase 2: CI/CD Pipeline Setup
+## CI/CD Pipeline Setup
 
 ### Part 1: AWS CodeBuild
 
 1. **Create a Build Project:**
    - Project Name: `Paypal-build`
-   - Source Provider: GitHub.
-   - Repository: Link to your repository.
-   - Privileged Mode: Enabled (for Docker builds).
-   - Subnets: Both private subnets.
-   - Security Groups: `ECS-InternetFacing-LB`
-   - Environment Variables:
-     - `AWS_DEFAULT_REGION`, `AWS_ACCOUNT_ID`, `REPOSITORY_URI`, `IMAGE_TAG`, `CONTAINER_NAME`, `IMAGE_REPO_NAME`, `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`.
-   - Build Specification: Use a `buildspec.yml` file.
+   - Source Provider: `GitHub`
+   - Credential: `Custom source Credential`
+   - connection: `Choose your connection` *(Assumed you have connection to your github repo)*
+   - Repository: `Select your repository`
+   - Service role: `new service role` *(Note this role name because we will add more permission later)*
+   - Additional configuration:
+      - Hours: `0`
+      - Minutes: `10`
+      - Privileged Mode: `Enabled (for Docker builds)`
+      - vpc: `default`
+      - Subnets: `Both private subnets`
+      - Security Groups: `ECS-InternetFacing-LB`
+      - Environment Variables:
+        - `AWS_DEFAULT_REGION`, `AWS_ACCOUNT_ID`, `REPOSITORY_URI`, `IMAGE_TAG`, `CONTAINER_NAME`, `IMAGE_REPO_NAME`, `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`.
+      - Build Specification: `Use a buildspec file`
 
 2. **Update IAM Role:**
    - Add the following policies to the CodeBuild service role:
      - `AmazonEC2ContainerRegistryFullAccess`
      - `AmazonEC2ContainerRegistryPowerUser`
+   - Remember: *(Note this role name because we will add more permission later)*
 
 3. **Monitor the Build:**
    - Verify the Docker image is pushed to ECR.
 
+   *Validate Build Logs*
+![Build-Success](/assets/Build-logs.png) 
+
 ---
 
-### Part 2: AWS CodePipeline
+### AWS CodePipeline
 
 1. **Create a Pipeline:**
+   - Creation options: `Build custom pipeline`
    - Pipeline Name: `Paypal-ecs-pipeline`
-   - Source Provider: GitHub.
-   - Build Provider: AWS CodeBuild (select `Paypal-build`).
-   - Deploy Provider: Amazon ECS.
-     - Cluster Name: `Paypal-App-Cluster`
-     - Service Name: `Paypal-Service`.
+   - Source Provider: `GitHub`
+   - connection: `Choose your connection`
+   - Repository name: `Your github repo`
+   - default Branch: `Your github branch`
+   - Build provider: `Other build providers`
+   - Select: `AWS CodeBuild`
+   - Project name: `Paypal-build`
+   - Environment Variables:
+        - `AWS_DEFAULT_REGION`, `AWS_ACCOUNT_ID`, `REPOSITORY_URI`, `IMAGE_TAG`, `CONTAINER_NAME`, `IMAGE_REPO_NAME`, `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`.
+   - Build type: `Single build`
+   - Deploy Provider: `Amazon ECS`
+   - Cluster Name: `Paypal-App-Cluster`
+   - Service Name: `Paypal-Service`.
 
-2. **Add Manual Approval Stage:**
-   - Stage Name: `Review`.
-   - Action Name: `Manual-Approval`.
+3. **Add Manual Approval Stage:**
+   *Add stage after Build*
+   - Stage Name: `Review`
+   - Click add action group
+   - Action Name: `Manual-Approval`
+   - Action provider: `Select Manual Approval`
+     Note: *Review stage will wait for your approval.*
 
-3. **Test Pipeline:**
+   *Validate Review stage*
+   ![Review-Stage](/assets/Review-stage.png)
+   
+     
+5. **Test Pipeline:**
    - Make changes to your repository and push to GitHub.
    - Monitor the pipeline execution.
    - Validate changes reflected in the application.
 
+   *After Changed Pushed*
+    *Pipeline Wating For Approval*
+   ![Waiting-for-approval](/assets/approval-details.png)
+
+   *Pipeline After Approval*
+   ![pipeline-after-approval](/assets/Pipeline-after-approved.png)
+
+   *Output After Changed Push (Pipeline Test Added in Login page)*
+   ![Change-after-new-push](/assets/pipeline-test-after-change-push.png)
+   
 ---
 
 ## Troubleshooting Steps
@@ -176,11 +238,53 @@ This document provides a comprehensive guide to deploying a Spring Boot applicat
 
 ---
 
-## Screenshots
+### Screenshots
+*Validate Deployment*
+![Login](/assets/login.png) 
 
-1. Load Balancer Test: `alb-test.jpg`
-2. Build Success: `build-success.jpg`
-3. Review Stage: `review-stage.jpg`
-4. Change Reflected: `change-reflected.png`
+ *Validate Build Logs*
+![Build-Success](/assets/Build-logs.png)
+
+*Validate Review stage*
+![Review-Stage](/assets/Review-stage.png)
+
+*After Changed Pushed Pipeline Wating For Approval*
+![Waiting-for-approval](/assets/approval-details.png)
+
+*Review Approved*
+![Approved](/assets/Approved.pngg)
+
+*Pipeline After Approval*
+![pipeline-after-approval](/assets/Pipeline-after-approved.png)
+
+*Output After Changed Push (Pipeline Test Added in Login page)*
+![Change-after-new-push](/assets/pipeline-test-after-change-push.png)
+
+*Health Checked*
+
+![Health-Checked](/assets/health-check.PNG)
+
+*Dashboard*
+![Dashboard](/assets/dashboard.png)
+
+*Paypal*
+![Paypal](/assets/paypal.png)
+
+*Swagger-1*
+![Swagger-1](/assets/swagger-1.png)
+
+*Swagger-2*
+![Swagger-2](/assets/swagger-2.png)
 
 
+---
+
+## Notes  
+
+⚠️ **Important Reminder**:  
+"Because we all love the thrill of an unexpected AWS bill, don't forget to *not* delete your created services after testing. Who doesn't enjoy explaining a hefty cloud bill to their manager? But hey, if you're into that sort of thing, go ahead and leave it running. 😉" 
+
+---
+
+## License
+This project is licensed under the MIT License.
