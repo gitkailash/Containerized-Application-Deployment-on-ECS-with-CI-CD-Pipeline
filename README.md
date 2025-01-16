@@ -12,7 +12,7 @@ This project provides a comprehensive walkthrough for deploying a **containerize
    - [Part 2: Networking and Security Configuration](#part-2-Networking-and-Security-Configuration)  
    - [Part 3: Amazon ECR Repository](#part-3-Amazon-ECR-Repository)  
    - [Part 4:  Amazon ECS Setup](#part-4-Amazon-ECS-Setup)
-3 [Testing ECS Deployment](Testing-ECS-Deployment)
+3. [Testing ECS Deployment](Testing-ECS-Deployment)
 4. [CI/CD Pipeline Setup](#ci-cd-pipeline-setup)  
    - [Part 1: AWS CodeBuild](#part-1-aws-codebuild)  
    - [Part 2: AWS CodePipeline](#part-2-aws-codepipeline)  
