@@ -1,4 +1,6 @@
 # **Containerized Application Deployment on ECS with CI/CD Pipeline**  
+
+## Overview
 This project provides a comprehensive walkthrough for deploying a **containerized Spring Boot web application** to **AWS ECS Fargate**, leveraging key AWS services such as **GitHub**, **AWS CodePipeline**, **Amazon ECR**, **AWS CodeBuild**, and **AWS CodeDeploy**. The project ensures a secure, scalable, and automated deployment workflow with **CI/CD integration**, enabling seamless application updates and deployment management.
 
 ---
