@@ -23,7 +23,7 @@ This project provides a comprehensive walkthrough for deploying a **containerize
 ---
 ## Architecture Diagram
 
-<img src="https://github.com/gitkailash/Containerized-Application-Deployment-on-ECS-with-CI-CD-Pipeline/blob/master/assets/architecture-diagram.png" alt="Architecture Diagram"/>
+<img src="https://github.com/gitkailash/Containerized-Application-Deployment-on-ECS-with-CI-CD-Pipeline/blob/master/assets/CI_CD Pipeline for Deploying a Spring Boot Application on AWS ECS Fargate.svg" alt="Architecture Diagram"/>
 
 
 ---
